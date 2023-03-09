@@ -16,7 +16,7 @@ export default function Post({ p, name, atualiza }) {
     const { token } = useContext(AppContext);
     const [likes, setLikes] = useState([])
     const [edit, setEdit] = useState(p.text)
-    const liked = likes.filter(l => l.username === name)
+    const [liked, setLiked] = useState([])
     const [clicado, setClicado] = useState(false);
     const [desabilitado, setDesabilitado] = useState(false);
     const [modalIsOpen, setIsOpen] = useState(false);
@@ -27,27 +27,26 @@ export default function Post({ p, name, atualiza }) {
         if (clicado) {
             nameRef.current.focus();
         }
-        if (p.post_id) {
-            const requisicaoLikes = axios.get(`${process.env.REACT_APP_API_URL}/likes/${p.post_id}`, { headers: { 'Authorization': `Bearer ${token}` } });
-            requisicaoLikes.then((res) => { setLikes(res.data) });
-            requisicaoLikes.catch((res) => { alert(res.response.data); });
-        }else{
-            setLikes([])
-        }
-    }, [token, setLikes, clicado, p]);
+        const requisicaoLikes = axios.get(`${process.env.REACT_APP_API_URL}/likes/${p.post_id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        requisicaoLikes.then((res) => { setLikes(res.data); setLiked(res.data.filter((l)=>l.username === name))});
+        requisicaoLikes.catch((res) => { alert(res.response.data); });
+
+    }, [token, setLikes, clicado]);
 
     function atualizaLikes() {
         const requisicaoLikes = axios.get(`${process.env.REACT_APP_API_URL}/likes/${p.post_id}`, { headers: { 'Authorization': `Bearer ${token}` } });
-        requisicaoLikes.then((res) => { setLikes(res.data) });
+        requisicaoLikes.then((res) => { setLikes(res.data);  setLiked(res.data.filter((l)=>l.username === name))});
         requisicaoLikes.catch((res) => { alert(res.response.data); });
     }
 
     function removelike(p) {
+        setLiked([])
         const requisicao = axios.delete(`${process.env.REACT_APP_API_URL}/likes/${p.post_id}`, { headers: { 'Authorization': `Bearer ${token}` } });
         requisicao.then((res) => { atualizaLikes() });
         requisicao.catch((res) => { alert(res.response.data); });
     }
     function postlike(p) {
+        setLiked([{username: name}])
         const requisicao = axios.post(`${process.env.REACT_APP_API_URL}/likes`, { post_id: p.post_id }, { headers: { 'Authorization': `Bearer ${token}` } });
         requisicao.then((res) => { atualizaLikes() });
         requisicao.catch((res) => { alert(res.response.data); });
@@ -110,7 +109,7 @@ export default function Post({ p, name, atualiza }) {
                     <h4 data-test="username" onClick={e => { e.preventDefault(); navigate(`/user/${p.user_id}`) }}>{p.username}</h4>
                     <div>
                         <TiPencilStyled onClick={() => { setDesabilitado(false); setClicado(!clicado); setEdit(p.text) }} data-test="edit-btn" />
-                        <AiFillDelete onClick={() => setIsOpen(!modalIsOpen)} data-test="delete-btn" />
+                        <AiFillDelete onClick={() => setIsOpen(!modalIsOpen)} data-test="delete-btn"/>
                     </div>
                 </PostHeaderContainer>
                 <h5 data-test="description">
