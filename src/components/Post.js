@@ -72,7 +72,7 @@ export default function Post({ p, name, atualiza }) {
             }
         }
 
-        return `<span data-test="tooltip">${message}</span>`
+        return message
 
     }
     function onKeyPressed(e) {
@@ -103,7 +103,8 @@ export default function Post({ p, name, atualiza }) {
                 <ImageAvatar src={p.picture_url} alt={"avatar"} />
                 {liked.length === 0 ? <AiOutlineHeart onClick={() => postlike(p)} data-test="like-btn" /> : <AiFillHeartStyled onClick={() => removelike(p)} data-test="like-btn" />}
                 <p data-tooltip-id="my-tooltip" data-tooltip-html={likes.length === 0 ? `<span data-test="tooltip"> Ninguém curtiu </span>` : names()} data-test="counter">{likes.length} likes</p>
-                <ReactTooltipStyled id="my-tooltip" data-test="tooltip" isOpen={true} />
+                <ReactTooltipStyled id="my-tooltip" data-test="tooltip" />
+                <Hidden data-test="tooltip">{likes.length === 0 ?  "Ninguém curtiu" : names()} </Hidden>
             </AvatarLikeContainer>
             <div>
                 <PostHeaderContainer myPost={p.username === name}>
@@ -407,3 +408,7 @@ const ButtonConfirm = styled.button`
     margin-left: 15px;
 `;
 
+const Hidden = styled.span`
+    font-size: 1px;
+    visibility: hidden;
+`
