@@ -12,7 +12,9 @@ export default function Profile() {
   const navigate = useNavigate();
   const { token, config } = useContext(AppContext);
   const [avatar, setAvatar] = useState();
+  const [avatarProfile, setAvatarProfile] = useState();
   const [name, setName] = useState();
+  const [userName, setUserName] = useState();
   const [posts, setPosts] = useState([]);
   const [hashtags, setHashtags] = useState([]);
   const { id } = useParams();
@@ -26,6 +28,7 @@ export default function Profile() {
       );
       requisicaoAvatar.then((res) => {
         setAvatar(res.data.picture_url);
+        setUserName(res.data.username)
       });
       requisicaoAvatar.catch((res) => {
         alert(res.response.data);
@@ -36,6 +39,7 @@ export default function Profile() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       requisicaoProfile.then((res) => {
+        setAvatarProfile(res.data.user.picture_url)
         setName(res.data.user.username);
         setPosts(res.data.user.user_posts);
         setLoading(false);
@@ -55,21 +59,10 @@ export default function Profile() {
     } else {
       navigate("/");
     }
-  }, [token, navigate]);
+  }, [token, navigate, config, id]);
 
   function atualiza() {
     //setLoading(true);
-    const requisicaoAvatar = axios.get(
-      `${process.env.REACT_APP_API_URL}/avatar`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    requisicaoAvatar.then((res) => {
-      setAvatar(res.data.user.picture_url);
-    });
-    requisicaoAvatar.catch((res) => {
-      alert(res.response.data);
-    });
-
     const requisicaoProfile = axios.get(
       `${process.env.REACT_APP_API_URL}/user/${id}`,
       { headers: { Authorization: `Bearer ${token}` } }
@@ -89,12 +82,12 @@ export default function Profile() {
       <Header avatar={avatar} />
       <BodyContainer>
         <TimelineContainer>
-          <Title>{name}</Title>
+          <Title> <img src={avatarProfile} alt=""/> {name}'s posts</Title>
 
           {loading ? (
             <Loading>Loading...</Loading>
           ) : (
-            <Feed posts={posts} name={name} />
+            <Feed posts={posts} name={userName} atualiza={atualiza}/>
           )}
         </TimelineContainer>
         <HashtagBoxContainer>
@@ -150,9 +143,20 @@ const Title = styled.h1`
   line-height: 64px;
   color: #ffffff;
   margin: 78px 0px 43px 0px;
+  display: flex;
+  align-items:center;
   @media (max-width: 375px) {
     font-size: 33px;
     line-height: 49px;
     margin: 19px 0px 19px 17px;
+  }
+  img{
+    width: 10%;
+    border-radius:50%;
+    margin-left:20px;
+    margin-right:20px;
+    @media (max-width: 650px) {
+      width: 20%;
+    }
   }
 `;
